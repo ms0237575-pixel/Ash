@@ -1,0 +1,414 @@
+﻿<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Love Tunnel</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        min-height: 100%;
+      }
+
+      body {
+        background:
+          radial-gradient(
+            circle at top,
+            rgba(255, 20, 147, 0.15),
+            transparent 25%
+          ),
+          radial-gradient(
+            circle at 80% 20%,
+            rgba(255, 105, 180, 0.1),
+            transparent 20%
+          ),
+          linear-gradient(180deg, #0a0005 0%, #2b0015 48%, #0a0005 100%);
+        color: #fff;
+        overflow: hidden;
+        font-family: "Cairo", sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 50% 45%,
+          rgba(255, 182, 193, 0.05),
+          transparent 40%
+        );
+        pointer-events: none;
+      }
+
+      .scene {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        perspective: 1400px;
+        overflow: hidden;
+      }
+
+      .scene::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at center,
+          rgba(255, 20, 147, 0.08),
+          transparent 45%
+        );
+        opacity: 0.9;
+        pointer-events: none;
+      }
+
+      .particle-field {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(0.5px);
+        animation: floatParticle linear infinite;
+      }
+
+      @keyframes floatParticle {
+        0% {
+          transform: translateY(0) translateX(0) scale(1);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-140px) translateX(40px) scale(0.8);
+          opacity: 0;
+        }
+      }
+
+      .grid-floor {
+        position: absolute;
+        width: 240%;
+        height: 240%;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotateX(75deg);
+        background-image:
+          linear-gradient(rgba(255, 20, 147, 0.25) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 105, 180, 0.2) 1px, transparent 1px);
+        background-size: 52px 52px;
+        animation: moveGrid 4s linear infinite;
+        z-index: 1;
+      }
+
+      @keyframes moveGrid {
+        to {
+          background-position: 0 52px;
+        }
+      }
+
+      .tunnel {
+        position: absolute;
+        inset: 0;
+        transform-style: preserve-3d;
+        transition: transform 0.2s ease-out;
+      }
+
+      .fog-mask {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at center,
+          rgba(0, 0, 0, 0),
+          #0a0005 80%
+        );
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      .element {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform-style: preserve-3d;
+        pointer-events: none;
+        animation-name: flyIn;
+        animation-fill-mode: forwards;
+        animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      @keyframes flyIn {
+        0% {
+          transform: translate3d(var(--x), var(--y), -1500px)
+            rotateZ(var(--angle));
+          opacity: 0;
+        }
+        15% {
+          opacity: 1;
+        }
+        85% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate3d(var(--x), var(--y), 800px)
+            rotateZ(calc(var(--angle) * 1.12));
+          opacity: 0;
+        }
+      }
+
+      .neon-text {
+        display: inline-block;
+        text-align: center;
+        letter-spacing: 0.1em;
+        font-size: 2rem;
+        line-height: 1.2;
+        font-weight: 800;
+        text-shadow:
+          0 0 10px rgba(255, 20, 147, 0.8),
+          0 0 20px rgba(255, 20, 147, 0.6),
+          0 0 40px rgba(255, 105, 180, 0.4),
+          0 0 80px rgba(255, 192, 203, 0.2);
+      }
+
+      .glass-card {
+        width: 320px;
+        padding: 12px;
+        border-radius: 20px;
+        background: rgba(255, 20, 147, 0.05);
+        border: 1px solid rgba(255, 105, 180, 0.2);
+        box-shadow: 0 15px 35px rgba(255, 20, 147, 0.2);
+        backdrop-filter: blur(8px);
+      }
+
+      .glass-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        display: block;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      }
+
+      .start-button {
+        position: absolute;
+        left: 50%;
+        bottom: 8%;
+        transform: translateX(-50%);
+        border: 2px solid rgba(255, 105, 180, 0.6);
+        padding: 16px 48px;
+        color: #fff;
+        background: rgba(255, 20, 147, 0.15);
+        border-radius: 50px;
+        cursor: pointer;
+        z-index: 20;
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        box-shadow:
+          0 0 20px rgba(255, 20, 147, 0.4),
+          inset 0 0 15px rgba(255, 105, 180, 0.2);
+        transition: all 0.3s ease;
+      }
+
+      .start-button:hover {
+        transform: translateX(-50%) scale(1.05);
+        background: rgba(255, 20, 147, 0.4);
+        box-shadow:
+          0 0 30px rgba(255, 20, 147, 0.6),
+          inset 0 0 20px rgba(255, 105, 180, 0.4);
+        border-color: #ff69b4;
+      }
+
+      .start-button:focus {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ========================================== -->
+    <!-- ضع مسار الأغنية الخاصة بك هنا في خاصية src -->
+    <!-- ========================================== -->
+    <audio id="bgMusic" src="m1.mp3" loop></audio>
+
+    <div class="scene">
+      <div class="particle-field"></div>
+      <div class="grid-floor"></div>
+      <div class="tunnel" id="tunnel"></div>
+      <div class="fog-mask"></div>
+      <button class="start-button" id="startBtn">STARt</button>
+    </div>
+
+    <script>
+      const tunnel = document.getElementById("tunnel");
+      const startBtn = document.getElementById("startBtn");
+      const particleField = document.querySelector(".particle-field");
+      const bgMusic = document.getElementById("bgMusic");
+
+      // ==========================================
+      // المحتوى (النصوص والصور)
+      // ==========================================
+      const contents = [
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "you will be a cool mom " },
+        { type: "text", value: "يبخته بيكي يعم " },
+        { type: "text", value: "Ash will  be always gorgeous" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "you will be a cool mom " },
+        { type: "text", value: "يبخته بيكي يعم " },
+        { type: "text", value: "Ash will  be always gorgeous" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "you will be a cool mom " },
+        { type: "text", value: "يبخته بيكي يعم " },
+        { type: "text", value: "Ash will  be always gorgeous" },
+        { type: "text", value: "Ash will  be always gorgeous" },
+        // --- ضع مسارات الصور الخاصة بك هنا ---
+        { type: "image", value: "1.jpeg" },
+        { type: "image", value: "2.jpeg" },
+        { type: "image", value: "3.jpeg" },
+        { type: "image", value: "4.jpeg" },
+        { type: "image", value: "5.jpeg" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "image", value: "6.jpeg" },
+        { type: "image", value: "7.jpeg" },
+        { type: "image", value: "8.jpeg" },
+        { type: "image", value: "9.jpeg" },
+        { type: "image", value: "10.jpeg" },
+        { type: "image", value: "11.jpeg" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "❤️❤️❤️❤️" },
+        { type: "image", value: "12.jpeg" },
+        { type: "image", value: "1.jpeg" },
+        { type: "image", value: "2.jpeg" },
+        { type: "image", value: "3.jpeg" },
+        { type: "text", value: "😍😍😍😍" },
+        { type: "text", value: "you will be a cool mom " },
+        { type: "text", value: "يبخته بيكي يعم " },
+        { type: "text", value: "Ash will  be always gorgeous" },
+        { type: "image", value: "4.jpeg" },
+        { type: "image", value: "5.jpeg" },
+        { type: "image", value: "6.jpeg" },
+        { type: "image", value: "7.jpeg" },
+        { type: "image", value: "8.jpeg" },
+        { type: "image", value: "9.jpeg" },
+        { type: "image", value: "10.jpeg" },
+        { type: "image", value: "11.jpeg" },
+        { type: "image", value: "12.jpeg" },
+      ];
+
+      // درجات ألوان متناسقة مع البينك (بينك فاقع، أبيض، بينك فاتح)
+      const colors = ["#ff1493", "#ffffff", "#ff69b4", "#ffb6c1", "#ffc0cb"];
+
+      let targetRotation = { x: 0, y: 0 };
+      let currentRotation = { x: 0, y: 0 };
+      const lerp = (start, end, amount) => start + (end - start) * amount;
+
+      function updateTilt() {
+        currentRotation.x = lerp(currentRotation.x, targetRotation.x, 0.05);
+        currentRotation.y = lerp(currentRotation.y, targetRotation.y, 0.05);
+        tunnel.style.transform = `rotateX(${currentRotation.y}deg) rotateY(${currentRotation.x}deg)`;
+        requestAnimationFrame(updateTilt);
+      }
+
+      function createParticle() {
+        const particle = document.createElement("div");
+        particle.className = "particle";
+        const size = Math.random() * 4 + 2;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.opacity = `${Math.random() * 0.5 + 0.2}`;
+        particle.style.background = Math.random() > 0.5 ? "#ff69b4" : "#ffffff";
+        particle.style.animationDuration = `${Math.random() * 15 + 15}s`;
+        particle.style.animationDelay = `${Math.random() * -15}s`;
+        particleField.appendChild(particle);
+      }
+
+      function createDeepElement() {
+        const item = contents[Math.floor(Math.random() * contents.length)];
+        const element = document.createElement("div");
+        element.className = "element";
+        const angle = (Math.random() - 0.5) * 30;
+        element.style.setProperty("--angle", `${angle}deg`);
+
+        // إبطاء سرعة العنصر وهو بيقرب
+        element.style.animationDuration = `${Math.random() * 3 + 4}s`;
+
+        // ** تم توسيع مساحة الانتشار (X و Y) عشان العناصر تظهر بعيدة عن بعض **
+        const x = (Math.random() - 0.5) * window.innerWidth * 1.4;
+        const y = (Math.random() - 0.5) * window.innerHeight * 1.1;
+        element.style.setProperty("--x", `${x}px`);
+        element.style.setProperty("--y", `${y}px`);
+
+        if (item.type === "text") {
+          element.classList.add("neon-text");
+          element.textContent = item.value;
+          element.style.color =
+            colors[Math.floor(Math.random() * colors.length)];
+          element.style.fontSize = `${Math.random() * 1 + 1.5}rem`;
+        } else {
+          element.classList.add("glass-card");
+          const img = document.createElement("img");
+          img.src = item.value;
+          img.style.transform = `rotate(${(Math.random() - 0.5) * 10}deg)`;
+          element.appendChild(img);
+        }
+
+        tunnel.appendChild(element);
+        element.addEventListener("animationend", () => element.remove());
+      }
+
+      function startScene() {
+        // تشغيل الموسيقى
+        bgMusic
+          .play()
+          .catch((error) =>
+            console.log("تحتاج لتفاعل المستخدم لتشغيل الصوت", error),
+          );
+
+        startBtn.style.opacity = "0";
+        startBtn.style.pointerEvents = "none";
+
+        for (let i = 0; i < 30; i++) createParticle();
+
+        // ** تم زيادة الوقت بين ظهور كل عنصر والتاني لـ 900 عشان مايكونوش زحمة **
+        setInterval(createDeepElement, 900);
+      }
+
+      startBtn.addEventListener("click", startScene);
+
+      window.addEventListener("mousemove", (event) => {
+        targetRotation.x = (event.clientX - window.innerWidth / 2) / 30;
+        targetRotation.y = -(event.clientY - window.innerHeight / 2) / 30;
+      });
+
+      updateTilt();
+    </script>
+  </body>
+</html>
